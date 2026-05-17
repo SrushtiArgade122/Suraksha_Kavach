@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Coordinates</title>
+    <style>
+        body { margin: 0; padding: 20px; font-family: sans-serif; background: #333; color: white; display: flex; flex-direction: column; align-items: center; }
+        #container { position: relative; display: inline-block; box-shadow: 0 0 10px black; }
+        img { display: block; max-width: 1000px; }
+        #canvas { position: absolute; top: 0; left: 0; cursor: crosshair; }
+        #output { margin-top: 20px; padding: 15px; background: #222; border: 1px solid #555; width: 80%; white-space: pre-wrap; font-family: monospace; }
+        .instructions { max-width: 800px; margin-bottom: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>Visual Mapping Tool</h2>
+        <p>Click and drag on the image below to draw a box around the object you want to block.</p>
+        <p>When you release the mouse, the code for the invisible obstacle will be generated below.</p>
+    </div>
+    
+    <div id="container">
+        <img id="bgImg" src="home_bg.jpg" draggable="false" />
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="output">Draw a box to get coordinates...</div>
+
+    <script>
+        const img = document.getElementById('bgImg');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const output = document.getElementById('output');
+        
+        let isDrawing = false;
+        let startX, startY;
+        
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+        };
+        
+        canvas.addEventListener('mousedown', e => {
+            let rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDrawing = true;
+        });
+        
+        canvas.addEventListener('mousemove', e => {
+            if (!isDrawing) return;
+            let rect = canvas.getBoundingClientRect();
+            let currentX = e.clientX - rect.left;
+            let currentY = e.clientY - rect.top;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            
+            let w = currentX - startX;
+            let h = currentY - startY;
+            ctx.fillRect(startX, startY, w, h);
+            ctx.strokeRect(startX, startY, w, h);
+        });
+        
+        canvas.addEventListener('mouseup', e => {
+            isDrawing = false;
+            let rect = canvas.getBoundingClientRect();
+            let endX = e.clientX - rect.left;
+            let endY = e.clientY - rect.top;
+            
+            let x = Math.min(startX, endX);
+            let y = Math.min(startY, endY);
+            let w = Math.abs(startX - endX);
+            let h = Math.abs(startY - endY);
+            
+            let px = (x / canvas.width).toFixed(3);
+            let py = (y / canvas.height).toFixed(3);
+            let pw = (w / canvas.width).toFixed(3);
+            let ph = (h / canvas.height).toFixed(3);
+            
+            output.innerText = `Mapped Box Selected:\n\nobjects.push({ \n   x: width * ${px}, \n   y: height * ${py}, \n   w: width * ${pw}, \n   h: height * ${ph}, \n   color: 'rgba(0,0,0,0)', \n   danger: false \n});\n\nJust copy the code snippet above or give me the percentages!`;
+        });
+    </script>
+</body>
+</html>

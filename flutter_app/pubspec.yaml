@@ -1,0 +1,92 @@
+name: suraksha_kavach
+description: Disaster Preparedness and Response Education System for Schools and Colleges
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  video_player: ^2.9.1
+  # State Management
+  provider: ^6.1.1
+  flame: ^1.11.0
+  # Navigation
+  go_router: ^13.0.0
+  webview_flutter: ^4.10.0
+  url_launcher: ^6.3.0
+  # HTTP & API (Connecting to Node.js/MongoDB)
+  http: ^1.2.0
+  dio: ^5.4.0
+  vibration: ^2.0.1
+  # Local Storage (Offline-First Capability)
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.2
+  path: ^1.9.0
+
+  # Firebase (For Push Notifications/Alerts)
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.17.4
+  firebase_messaging: ^14.7.19
+  cloud_firestore: ^4.15.4
+
+  # Audio (For Alarm Sounds)
+  audioplayers: ^5.0.0
+
+  # Location & Phone (Critical for SOS Features)
+  geolocator: ^11.0.0
+ 
+
+  # UI & Animations (Ensures High Presentation Quality)
+  lottie: ^3.0.0
+  fl_chart: ^0.67.0
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.10
+  animated_text_kit: ^4.2.2
+
+  # Internationalization (Multi-language support)
+  intl: ^0.20.2
+
+  # Connectivity (Offline Status Tracking)
+  connectivity_plus: ^5.0.2
+
+  # JWT (Token Security)
+  jwt_decoder: ^2.0.1
+
+  # Icons & Branding
+  cupertino_icons: ^1.0.6
+  google_fonts: ^8.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_gen_runner: ^5.4.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+  
+  # CRITICAL: Ensure these folders exist in your project root!
+  assets:
+    - assets/data/questions_en.json
+    - assets/data/questions_hi.json
+    - assets/data/questions_mr.json
+    - assets/data/tutorials.json
+    - assets/images/
+    - assets/videos/
+    - assets/web/index.html
+    - assets/web/mapping_tool.html
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png" 
+  adaptive_icon_background: "#1A237E" # Matches your dark indigo theme
+  adaptive_icon_foreground: "assets/images/logo.png"

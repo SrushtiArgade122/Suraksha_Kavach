@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shake and Survive: Earthquake Hero</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primaryBlue: #D9EAF3;
+            --buttonBlue: #8BB7D9;
+            --buttonOrange: #F79F51;
+            --dashboardBg: #E0E0E0;
+            --dangerRed: #E57373;
+            --textDark1: #2C5273;
+            --textOrange: #D97925;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primaryBlue);
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #gameScreen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        #joystickZone {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        #joystickBase {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80px;
+            height: 80px;
+            margin: -40px 0 0 -40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.24);
+            pointer-events: none;
+        }
+
+        #joystickStick {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            margin: -15px 0 0 -15px;
+            border-radius: 50%;
+            background: white;
+            pointer-events: none;
+        }
+
+        #mainMenu {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            z-index: 100;
+            background-color: var(--primaryBlue);
+        }
+
+        .bg-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 400px;
+            color: rgba(0, 0, 0, 0.05);
+            z-index: 0;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            align-items: center;
+        }
+
+        .top-dash {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 15px;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .dash-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dash-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dash-text span:nth-child(1) {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .dash-text span:nth-child(2) {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .title-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--textDark1);
+            line-height: 1;
+        }
+
+        .title-block h2 {
+            margin: 0;
+            font-size: 50px;
+            font-weight: 900;
+            color: var(--textOrange);
+            line-height: 1;
+        }
+
+        .title-block h3 {
+            margin: 5px 0 0 0;
+            font-size: 22px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .shield-icon {
+            margin: 30px 0;
+            background: var(--buttonBlue);
+            border-radius: 50%;
+            padding: 20px;
+            border: 5px solid white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-btn {
+            width: 80%;
+            max-width: 300px;
+            height: 60px;
+            border-radius: 30px;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.26);
+            margin-bottom: 15px;
+            transition: transform 0.1s;
+        }
+
+        .menu-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-orange {
+            background-color: var(--buttonOrange);
+        }
+
+        .btn-blue {
+            background-color: var(--buttonBlue);
+        }
+
+        #inGameUI {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-header {
+            background: rgba(0, 0, 0, 0.12);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .lvl-badge {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .game-footer {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .tip-popup {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid orange;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .footer-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .help-btn {
+            background: var(--buttonOrange);
+            border-radius: 20px;
+            border: 2px solid #333;
+            padding: 12px 0;
+            flex: 1;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pause-btn {
+            font-size: 50px;
+            color: rgba(0, 0, 0, 0.54);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="mainMenu">
+        <i class="fa-solid fa-shield-halved bg-icon"></i>
+        <div class="content-layer">
+            <div class="top-dash">
+                <div class="dash-item"><i class="fa-solid fa-heart" style="color: red; font-size: 24px;"></i>
+                    <div class="dash-text"><span>Health</span><span>100</span></div>
+                </div>
+                <div class="dash-item"><i class="fa-solid fa-star" style="color: orange; font-size: 24px;"></i>
+                    <div class="dash-text"><span>Score</span><span>1225</span></div>
+                </div>
+            </div>
+            <div style="flex-grow: 1;"></div>
+            <div class="title-block">
+                <h1>SHAKE AND</h1>
+                <h2>SURVIVE</h2>
+                <h3>Earthquake Hero</h3>
+            </div>
+            <div class="shield-icon">
+                <i class="fa-solid fa-shield-halved" style="color: white; font-size: 80px;"></i>
+            </div>
+            <div style="flex-grow: 1;"></div>
+            <div class="menu-btn btn-orange" onclick="showScenarioMap()">Choose Scenario</div>
+            <div class="menu-btn btn-blue">View Badges</div>
+            <div class="menu-btn btn-blue">Settings</div>
+            <div style="height: 40px;"></div>
+        </div>
+    </div>
+
+    <div id="scenarioMap"
+        style="display: none; flex-direction: column; width: 100%; height: 100%; position: relative; overflow: hidden; z-index: 100; background-color: var(--primaryBlue); padding: 20px; box-sizing: border-box; align-items: center;">
+        <h1 style="color: var(--textDark1); font-size: 36px; margin-top: 40px; margin-bottom: 5px; font-weight: 900; text-align: center;">SELECT SCENARIO</h1>
+        <p style="color: var(--textDark1); font-size: 16px; margin-bottom: 30px; font-weight: bold; text-align: center;">Choose an environment for your earthquake drill</p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px;">
+            <div class="menu-btn btn-blue" onclick="startMission(1)" style="width: 100%; height: 80px; justify-content: flex-start; padding: 0 20px; gap: 20px;">
+                <i class="fa-solid fa-school" style="font-size: 32px; color: white;"></i>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-size: 20px;">Classroom</span>
+                    <span style="font-size: 12px; color: rgba(255,255,255,0.8); font-weight: normal;">Indoor Danger Drill</span>
+                </div>
+            </div>
+            <div class="menu-btn btn-orange" onclick="startMission(2)" style="width: 100%; height: 80px; justify-content: flex-start; padding: 0 20px; gap: 20px;">
+                <i class="fa-solid fa-house" style="font-size: 32px; color: white;"></i>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-size: 20px;">Home / Living Room</span>
+                    <span style="font-size: 12px; color: rgba(255,255,255,0.8); font-weight: normal;">Glass & Heavy Objects</span>
+                </div>
+            </div>
+            <div class="menu-btn" onclick="startMission(3)" style="width: 100%; height: 80px; justify-content: flex-start; padding: 0 20px; gap: 20px; background-color: #81C784;">
+                <i class="fa-solid fa-tree" style="font-size: 32px; color: white;"></i>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span style="font-size: 20px;">Open Ground</span>
+                    <span style="font-size: 12px; color: rgba(255,255,255,0.8); font-weight: normal;">Evacuation Target</span>
+                </div>
+            </div>
+        </div>
+        <div style="flex-grow: 1;"></div>
+        <div class="menu-btn" onclick="showMainMenu()" style="width: 80%; background-color: grey; height: 50px;">Back to Menu</div>
+        <div style="height: 20px;"></div>
+    </div>
+
+    <div id="gameScreen">
+        <canvas id="gameCanvas"></canvas>
+        <div id="joystickZone">
+            <div id="joystickBase"></div>
+            <div id="joystickStick"></div>
+        </div>
+
+        <div id="inGameUI">
+            <div class="game-header" style="margin: 20px; padding: 10px; background: white; border-radius: 10px; border: 2px solid black;">
+                <div style="display:flex; align-items:center; color: red; font-weight: bold;">
+                    HP:
+                    <div style="width: 40px; height: 14px; border: 2px solid #333; border-radius: 3px; position: relative; margin-left: 5px; padding: 1px; background: rgba(0,0,0,0.1);">
+                        <div id="batteryLevel" style="height: 100%; width: 100%; background-color: #4CAF50; transition: width 0.3s, background-color 0.3s;"></div>
+                        <div style="position: absolute; right: -5px; top: 2px; width: 3px; height: 8px; background-color: #333; border-radius: 0 2px 2px 0;"></div>
+                    </div>
+                </div>
+                <div class="lvl-badge" style="font-weight: 900; color: black; background: transparent; padding: 0;">CLASSROOM CHAOS</div>
+                <div id="uiScore" style="color: orange; font-weight: bold;">SCORE: 0</div>
+            </div>
+
+            <div class="game-footer">
+                <div class="tip-popup">Safe Zone: Drop, Cover, and Hold on</div>
+                <div class="footer-btns">
+                    <div class="help-btn">Help</div>
+                    <i class="fa-solid fa-circle-pause pause-btn" onclick="togglePause()"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameOverScreen" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:100; flex-direction:column; justify-content:center; align-items:center;">
+            <h1 style="color:#F44336; font-size:60px; font-weight:900; margin-bottom:10px;">GAME OVER</h1>
+            <p style="color:white; font-size:24px; font-weight:bold; margin-bottom:40px;">Your health was reduced to 0%.</p>
+            <div class="menu-btn btn-orange" onclick="location.reload()" style="pointer-events:auto;">Try Again</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        function CanvasRoundRect(x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            if (!activeGame) draw();
+        });
+
+        const stick = document.getElementById('joystickStick');
+        const zone = document.getElementById('joystickZone');
+        let joyX = 0, joyY = 0, isDragging = false, stickStart = { x: 0, y: 0 };
+
+        const setupJoy = (e) => {
+            if (!activeGame || paused) return;
+            isDragging = true;
+            let rect = zone.getBoundingClientRect();
+            stickStart = { x: rect.left + 40, y: rect.top + 40 };
+            moveJoy(e);
+        };
+        const moveJoy = (e) => {
+            if (!isDragging) return;
+            let cx = e.touches ? e.touches[0].clientX : e.clientX;
+            let cy = e.touches ? e.touches[0].clientY : e.clientY;
+            let dx = cx - stickStart.x, dy = cy - stickStart.y;
+            let dist = Math.hypot(dx, dy);
+            if (dist > 40) { dx = (dx / dist) * 40; dy = (dy / dist) * 40; }
+            stick.style.transform = `translate(${dx}px, ${dy}px)`;
+            joyX = dx / 40; joyY = dy / 40;
+        };
+        const endJoy = () => { isDragging = false; joyX = 0; joyY = 0; stick.style.transform = 'translate(0px, 0px)'; };
+
+        zone.addEventListener('touchstart', setupJoy); zone.addEventListener('mousedown', setupJoy);
+        window.addEventListener('touchmove', moveJoy); window.addEventListener('mousemove', moveJoy);
+        window.addEventListener('touchend', endJoy); window.addEventListener('mouseup', endJoy);
+
+        const keys = { w: 0, a: 0, s: 0, d: 0, ArrowUp: 0, ArrowLeft: 0, ArrowDown: 0, ArrowRight: 0 };
+        document.addEventListener('keydown', e => { if (keys[e.key] !== undefined) keys[e.key] = 1; });
+        document.addEventListener('keyup', e => { if (keys[e.key] !== undefined) keys[e.key] = 0; });
+
+        let activeGame = false;
+        let paused = false;
+        let shakeIntensity = 0;
+        let hazardTimer = 0;
+        let player = { x: 0, y: 0, width: 30, height: 30, speed: 200 };
+        let hazards = [], safeZones = [];
+        let isNearSafe = false;
+        let currentLevel = 1;
+        let safeTimer = 0;
+        let hp = 100;
+        let score = 0;
+        let lastTime = 0;
+
+        const homeBg = new Image(); homeBg.src = '../images/home_bg.jpg';
+        const classBg = new Image(); classBg.src = '../images/class_bg.jpg';
+        const groundBg = new Image(); groundBg.src = '../images/playground_bg.jpg';
+
+        function startMission(lvl = 1) {
+            currentLevel = lvl;
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('scenarioMap').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            player.x = width / 2;
+            player.y = height * 0.6; 
+
+            hazards = []; safeZones = [];
+            shakeIntensity = 0; paused = false; safeTimer = 0;
+
+            if (lvl === 1) { 
+                hp = 100; score = 0;
+                document.querySelector('.lvl-badge').innerText = "CLASSROOM CHAOS";
+                safeZones.push({ x: width * 0.12, y: height * 0.52, w: 130, h: 80, label: 'Under Desk' });
+                safeZones.push({ x: width * 0.68, y: height * 0.52, w: 130, h: 80, label: 'Under Desk' });
+                safeZones.push({ x: width * 0.12, y: height * 0.72, w: 130, h: 80, label: 'Under Desk' });
+                safeZones.push({ x: width * 0.68, y: height * 0.72, w: 130, h: 80, label: 'Under Desk' });
+            } else if (lvl === 2) {
+                document.querySelector('.lvl-badge').innerText = "HOME HAZARDS";
+                safeZones.push({ x: width * 0.10, y: height * 0.75, w: 150, h: 100, label: 'Beside Bed' });
+            } else if (lvl === 3) {
+                document.querySelector('.lvl-badge').innerText = "OPEN GROUND";
+                // ✅ Centre Ground Safe Zone
+                safeZones.push({ 
+                        x: width * 0.25, 
+                        y: height * 0.65, 
+                        w: 160, 
+                        h: 100, 
+                        label: 'At Centre' 
+                    });            }
+
+            activeGame = true;
+            if (lastTime === 0) requestAnimationFrame(gameLoop);
+        }
+
+        function togglePause() { paused = !paused; }
+
+        function levelComplete() {
+            paused = true; activeGame = false;
+            document.getElementById('inGameUI').insertAdjacentHTML('beforeend', `<div id="levelCompleteModal" style="pointer-events:auto; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; border:4px solid green; padding:30px; border-radius:15px; text-align:center; z-index:20;"> <h2 style="color:green;">LEVEL COMPLETE!</h2> <button onclick="showScenarioMap()" style="padding:10px; background:orange; color:white; border:none; border-radius:10px;">Choose Location</button> </div>`);
+        }
+
+        function showScenarioMap() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+            const m = document.getElementById('levelCompleteModal'); if (m) m.remove();
+            document.getElementById('scenarioMap').style.display = 'flex';
+        }
+
+        function showMainMenu() {
+            document.getElementById('scenarioMap').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
+        }
+
+        function gameLoop(time) {
+            let dt = (time - lastTime) / 1000;
+            lastTime = time;
+            if (dt > 0.1) dt = 0.1;
+            if (activeGame && !paused) update(dt);
+            if (activeGame) draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update(dt) {
+            let kX = (keys.ArrowRight || keys.d) - (keys.ArrowLeft || keys.a);
+            let kY = (keys.ArrowDown || keys.s) - (keys.ArrowUp || keys.w);
+            let inputX = joyX !== 0 ? joyX : kX;
+            let inputY = joyY !== 0 ? joyY : kY;
+
+            player.x += inputX * player.speed * dt;
+            player.y += inputY * player.speed * dt;
+
+            let minY = currentLevel === 1 ? height * 0.45 : height * 0.50;
+            let maxY = height - 180;
+            if (player.x < 20) player.x = 20;
+            if (player.x > width - 20) player.x = width - 20;
+            if (player.y < minY) player.y = minY;
+            if (player.y > maxY) player.y = maxY;
+
+            if (hp <= 0) {
+                hp = 0; document.getElementById('gameOverScreen').style.display = 'flex';
+                paused = true; return;
+            }
+
+            hazardTimer -= dt;
+            if (hazardTimer <= 0) {
+                hazardTimer = 1.5; shakeIntensity = 15;
+                hazards.push({ x: Math.random() * width, y: -20, speed: 300, hasHit: false });
+            }
+
+            isNearSafe = false;
+            let currentLabel = "";
+            for (let sz of safeZones) {
+                if (player.x > sz.x && player.x < sz.x + sz.w && player.y > sz.y && player.y < sz.y + sz.h) {
+                    isNearSafe = true;
+                    currentLabel = sz.label;
+                    score += 1;
+                }
+            }
+
+            for (let i = hazards.length - 1; i >= 0; i--) {
+                let h = hazards[i]; h.y += h.speed * dt;
+                if (!h.hasHit && Math.hypot(h.x - player.x, h.y - player.y) < 35) {
+                    h.hasHit = true; hp -= 10; shakeIntensity = 25;
+                }
+                if (h.y > height) hazards.splice(i, 1);
+            }
+
+            document.getElementById('batteryLevel').style.width = hp + '%';
+            document.getElementById('uiScore').innerText = `SCORE: ${score}`;
+
+            const tipBox = document.querySelector('.tip-popup');
+            if (isNearSafe) {
+                safeTimer += dt;
+                tipBox.innerText = `✅ ${currentLabel} [${Math.max(0, 2.0 - safeTimer).toFixed(1)}s]`;
+                tipBox.style.background = "#81C784";
+                tipBox.style.display = "block";
+                if (safeTimer >= 2.0) levelComplete();
+            } else {
+                safeTimer = 0; tipBox.style.display = "none";
+            }
+        }
+
+        // ✅ IMPROVED PERSON UI/UX (STUDENT MODEL)
+        function drawPlayer(ctx, x, y) {
+            let t = Date.now() / 150;
+            ctx.save();
+            ctx.translate(x, y);
+
+            let isMoving = (joyX !== 0 || joyY !== 0 || keys.w || keys.a || keys.s || keys.d);
+            let bounce = isMoving ? Math.abs(Math.sin(t * 2)) * 5 : 0;
+            ctx.translate(0, -bounce);
+
+            // 🎒 Backpack (Yellow)
+            ctx.fillStyle = '#FBC02D';
+            CanvasRoundRect(-14, -8, 28, 18, 5); ctx.fill();
+
+            // 👕 Body (Blue Shirt)
+            ctx.fillStyle = '#448AFF';
+            ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+
+            // 👖 Legs (Dark Blue)
+            ctx.fillStyle = '#1565C0';
+            let legSwing = isMoving ? Math.sin(t * 2) * 10 : 0;
+            CanvasRoundRect(-10, 12 + legSwing, 7, 12, 3); ctx.fill();
+            CanvasRoundRect(3, 12 - legSwing, 7, 12, 3); ctx.fill();
+
+            // 👱 Head & Face
+            ctx.fillStyle = '#FFCC80';
+            ctx.beginPath(); ctx.arc(0, -18, 11, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#3E2723'; // Hair
+            ctx.beginPath(); ctx.arc(0, -22, 11, Math.PI, 0); ctx.fill();
+
+            ctx.fillStyle = 'black'; // Eyes
+            ctx.beginPath(); ctx.arc(-4, -18, 2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(4, -18, 2, 0, Math.PI * 2); ctx.fill();
+
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            if (shakeIntensity > 0) {
+                ctx.translate((Math.random() - 0.5) * shakeIntensity, (Math.random() - 0.5) * shakeIntensity);
+                shakeIntensity *= 0.9;
+            }
+            let bg = currentLevel === 1 ? classBg : (currentLevel === 2 ? homeBg : groundBg);
+            if (bg.complete) ctx.drawImage(bg, 0, 0, width, height);
+
+            for (let sz of safeZones) {
+                ctx.fillStyle = 'rgba(129, 199, 132, 0.3)';
+                ctx.strokeStyle = '#81C784';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(sz.x + sz.w / 2, sz.y); ctx.lineTo(sz.x + sz.w, sz.y + sz.h / 2);
+                ctx.lineTo(sz.x + sz.w / 2, sz.y + sz.h); ctx.lineTo(sz.x, sz.y + sz.h / 2);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "white"; ctx.font = "bold 14px Arial"; ctx.textAlign = "center";
+                ctx.fillText(sz.label, sz.x + sz.w / 2, sz.y - 10);
+            }
+
+            drawPlayer(ctx, player.x, player.y);
+
+            for (let h of hazards) {
+                ctx.fillStyle = 'red'; ctx.font = 'bold 24px Arial';
+                ctx.fillText('⚠️', h.x, h.y);
+            }
+            ctx.restore();
+        }
+    </script>
+</body>
+
+</html>
