@@ -1,5 +1,5 @@
 # 🛡️ Suraksha Kavach (SKavach)
-### 🏆 National Finalist @ LOGICA 5.0 Project & Innovation Competition (JSPM's RSCOE)
+
 
 **Suraksha Kavach** is an online-first, gamified disaster preparedness and safety ecosystem. Built natively using Flutter and backed by a scalable Node.js microservice architecture, the platform transforms boring safety manuals into an interactive, lifesaving training experience.
 
