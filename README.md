@@ -6,7 +6,6 @@
 ---
 
 ## 👥 The Engineering Team
-Developed with passion by our second-year Computer Engineering team from **JSPM's Rajarshi Shahu College of Engineering (RSCOE)**:
 * **Srushti Argade** — *Full-Stack Integration & Gamification Logic*
 * **Unnati Lambade** — *UI/UX Design & Frontend Architecture*
 * **Akanksha Sonawane** — *Simulation Engines & Localization Systems*
