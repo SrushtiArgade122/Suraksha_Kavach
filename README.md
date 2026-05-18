@@ -24,7 +24,7 @@ Developed with passion by our second-year Computer Engineering team from **JSPM'
 ---
 
 ## 🛠️ Technical Stack
-
+          
 | Layer | Technologies Used |
 | :--- | :--- |
 | **Frontend Mobile Client** | Flutter, Dart, Provider (Asynchronous State Management) |
