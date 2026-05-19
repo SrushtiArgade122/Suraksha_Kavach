@@ -6,10 +6,9 @@
 ---
 
 ## 👥 The Engineering Team
-* **Srushti Argade** — *Full-Stack Integration & Gamification Logic*
-* **Unnati Lambade** — *UI/UX Design & Frontend Architecture*
-* **Akanksha Sonawane** — *Simulation Engines & Localization Systems*
-
+* **Srushti Argade** 
+* **Unnati Lambade**
+* **Akanksha Sonawane** 
 ---
 
 ## 🚀 Key Features
